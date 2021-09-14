@@ -58,7 +58,7 @@ GemInfo = Struct.new(:gem_name, keyword_init: true) do
         if File.exists?("#{GEMS_ROOT}/#{gem_name}.gem")
             puts "Skipping wget #{GEMS_ROOT}/#{gem_name}.gem"
         else
-            `wget #{gem_uri} -O #{GEMS_ROOT}/#{gem_name}.gem`
+            `wget -q #{gem_uri} -O #{GEMS_ROOT}/#{gem_name}.gem`
         end
     end
 

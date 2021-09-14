@@ -12,4 +12,6 @@ files: #{files}
 lines: #{lines}
 HERE
 
+puts content
+
 File.write("stats", content)
