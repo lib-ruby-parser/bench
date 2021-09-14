@@ -2,5 +2,7 @@ filelist
 gems/
 repos.zip
 repos/
+rust-parse/Cargo.lock
 rust-parse/target/
+rust-parser
 stats
