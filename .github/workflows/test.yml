@@ -1,0 +1,74 @@
+name: test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test-rust-parser:
+    name: target = ${{ matrix.build.target }}
+    runs-on: ${{ matrix.build.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        build:
+          - { os: ubuntu-latest,  features: jemallocator, target: x86_64-unknown-linux-gnu }
+          - { os: macos-latest,   features: jemallocator, target: x86_64-apple-darwin      }
+          - { os: windows-latest,                         target: x86_64-pc-windows-msvc   }
+          - { os: windows-latest,                         target: x86_64-pc-windows-gnu    }
+    steps:
+      - name: setup msvc on windows
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          target: ${{ matrix.build.target }}
+          override: true
+
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: build parser
+        env:
+          TARGET: ${{ matrix.build.target }}
+          CARGOFLAGS: --features=${{ matrix.build.features }}
+        run: make rust-parser
+
+      - name: make dummy data
+        run: make dummy-repos dummy-filelist
+
+      - name: test runner
+        env:
+          FILELIST_PATH: dummy-filelist
+        run: ./rust-parser
+
+  test-data:
+    name: repos.zip
+    runs-on: ubuntu-latest
+    steps:
+      - name: install ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.0.0
+
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: build repos.zip
+        run: make repos.zip
+
+      - name: show structure of repos.zip
+        run: unzip -l repos.zip
