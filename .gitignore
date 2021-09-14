@@ -1,4 +1,6 @@
-repos/
+filelist
 gems/
-strip-out
 repos.zip
+repos/
+rust-parse/target/
+stats

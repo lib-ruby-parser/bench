@@ -71,6 +71,7 @@ GemInfo = Struct.new(:gem_name, keyword_init: true) do
     end
 end
 
+# == Step 1: download and unpack gems
 Page.map do |page|
     Thread.new do
         page.gems.each do |gem|
@@ -79,3 +80,14 @@ Page.map do |page|
         end
     end
 end.each(&:join)
+
+# == Step 2: strip repos dir, remove all non-rb files
+Dir['repos/**/*'].each do |f|
+    # ignore directories
+    next if File.directory?(f)
+
+    # ignore Ruby files
+    next if File.extname(f) == '.rb'
+
+    FileUtils.rm(f)
+end

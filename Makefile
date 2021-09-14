@@ -1,14 +1,18 @@
 repos:
 	ruby download.rb
+CLEAN += repos gems
 
-strip-out: repos
-	ruby strip.rb
+stats:
+	ruby stats.rb
+CLEAN += stats
 
-repos.zip: strip-out
-	zip -r -q repos.zip repos/ strip-out
+filelist:
+	ruby filelist.rb
+CLEAN += filelist
+
+repos.zip: repos stats filelist
+	zip -r -q repos.zip repos/ stats filelist
+CLEAN += repos.zip
 
 clean:
-	rm -rf gems
-	rm -rf repos
-	rm -rf strip-out
-	rm -rf repos.zip
+	rm -rf $(CLEAN)
