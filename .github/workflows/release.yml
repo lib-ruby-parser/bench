@@ -14,19 +14,11 @@ jobs:
     name: upload repos.zip
     runs-on: ubuntu-latest
     steps:
-      - name: install ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.0.0'
-
       - name: checkout
         uses: actions/checkout@v2
 
-      - name: build repos.zip
-        run: make repos.zip
-
-      - name: show structure of repos.zip
-        run: unzip -l repos.zip
+      - name: make repos.zip
+        uses: ./.github/actions/make-repos-zip
 
       - name: upload repos.zip
         uses: actions/upload-artifact@v2
@@ -38,6 +30,9 @@ jobs:
     name: target = ${{ matrix.build.target }}
     needs: ['build-repos-zip']
     runs-on: ${{ matrix.build.os }}
+    env:
+      OUTPUT: rust-parser-${{ matrix.build.target }}${{ matrix.build.exe }}
+      FILELIST_PATH: filelist
     strategy:
       fail-fast: false
       matrix:
@@ -58,38 +53,42 @@ jobs:
       - name: unzip repos
         run: unzip repos.zip
 
-      - name: setup msvc on windows
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: install rust
-        uses: actions-rs/toolchain@v1
+      - name: build rust-parser
+        uses: ./.github/actions/make-rust-parser
         with:
-          profile: minimal
-          toolchain: stable
           target: ${{ matrix.build.target }}
-          override: true
-
-      - name: build parser
-        env:
-          TARGET: ${{ matrix.build.target }}
-          CARGOFLAGS: --release --features=${{ matrix.build.features }}
-          BUILD_ENV: release
-        run: make rust-parser
-
-      - name: test rust-parser
-        env:
-          FILELIST_PATH: filelist
-        run: ./rust-parser
+          cargoflags: --features=${{ matrix.build.features }} --release
+          build_env: release
 
       - name: give rust-parser representative name
-        run: cp rust-parser${{ matrix.build.exe }} rust-parser-${{ matrix.build.target }}${{ matrix.build.exe }}
+        run: cp rust-parser${{ matrix.build.exe }} ${{ env.OUTPUT }}
 
-      - name: upload rust-parser-${{ matrix.build.target }}${{ matrix.build.exe }}
+      - name: install ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.0.0"
+
+      - name: test rust-parser
+        run: |
+          echo "Rust:" >> ${{ matrix.build.target }}.benchmark
+          ./rust-parser >> ${{ matrix.build.target }}.benchmark
+
+          echo "Ruby:" >> ${{ matrix.build.target }}.benchmark
+          ruby ruby-parser.rb >> ${{ matrix.build.target }}.benchmark
+
+          cat ${{ matrix.build.target }}.benchmark
+
+      - name: upload ${{ env.OUTPUT }}
         uses: actions/upload-artifact@v2
         with:
-          name: rust-parser-${{ matrix.build.target }}${{ matrix.build.exe }}
-          path: rust-parser-${{ matrix.build.target }}${{ matrix.build.exe }}
+          name: ${{ env.OUTPUT }}
+          path: ${{ env.OUTPUT }}
+
+      - name: upload ${{ matrix.build.target }}.benchmark
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.build.target }}.benchmark
+          path: ${{ matrix.build.target }}.benchmark
 
   make-release:
     name: release
@@ -98,34 +97,57 @@ jobs:
       - 'build-rust-parser'
     runs-on: ubuntu-latest
     steps:
-      - name: download rust-parser-x86_64-unknown-linux-gnu
-        uses: actions/download-artifact@v2
-        with:
-          name: rust-parser-x86_64-unknown-linux-gnu
+      # Parsers
+      - uses: actions/download-artifact@v2
+        with: { name: rust-parser-x86_64-unknown-linux-gnu }
 
-      - name: download rust-parser-x86_64-apple-darwin
-        uses: actions/download-artifact@v2
-        with:
-          name: rust-parser-x86_64-apple-darwin
+      - uses: actions/download-artifact@v2
+        with: { name: rust-parser-x86_64-apple-darwin }
 
-      - name: download rust-parser-x86_64-pc-windows-msvc.exe
-        uses: actions/download-artifact@v2
-        with:
-          name: rust-parser-x86_64-pc-windows-msvc.exe
+      - uses: actions/download-artifact@v2
+        with: { name: rust-parser-x86_64-pc-windows-msvc.exe }
 
-      - name: download rust-parser-x86_64-pc-windows-gnu.exe
-        uses: actions/download-artifact@v2
-        with:
-          name: rust-parser-x86_64-pc-windows-gnu.exe
+      - uses: actions/download-artifact@v2
+        with: { name: rust-parser-x86_64-pc-windows-gnu.exe }
 
-      - name: download repos.zip
-        uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v2
         with:
           name: repos.zip
+
+      # Benchmarks
+      - uses: actions/download-artifact@v2
+        with: { name: x86_64-unknown-linux-gnu.benchmark }
+
+      - uses: actions/download-artifact@v2
+        with: { name: x86_64-apple-darwin.benchmark }
+
+      - uses: actions/download-artifact@v2
+        with: { name: x86_64-pc-windows-msvc.benchmark }
+
+      - uses: actions/download-artifact@v2
+        with: { name: x86_64-pc-windows-gnu.benchmark }
+
+      - name: merge benchmarks
+        run: |
+          ls -l
+          echo "Results for x86_64-unknown-linux-gnu:" >> benchmark
+          cat x86_64-unknown-linux-gnu.benchmark >> benchmark
+
+          echo "Results for x86_64-apple-darwin.benchmark:" >> benchmark
+          cat x86_64-apple-darwin.benchmark >> benchmark
+
+          echo "Results for x86_64-pc-windows-msvc:" >> benchmark
+          cat x86_64-pc-windows-msvc.benchmark >> benchmark
+
+          echo "Results for x86_64-pc-windows-gnu:" >> benchmark
+          cat x86_64-pc-windows-gnu.benchmark >> benchmark
+
+          cat benchmark
 
       - name: release
         uses: ncipollo/release-action@v1
         with:
           artifactErrorsFailBuild: true
-          artifacts: "rust-parser-*,repos.zip"
+          artifacts: "rust-parser-*,repos.zip,benchmark"
+          bodyFile: benchmark
           token: ${{ secrets.GITHUB_TOKEN }}

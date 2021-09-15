@@ -1,0 +1,30 @@
+name: "make rust-parser"
+description: "make rust-parser"
+inputs:
+  target:
+    description: "target"
+    required: true
+  cargoflags:
+    description: "cargo features"
+    required: true
+  build_env:
+    description: "build environment"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: install rust
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        target: ${{ inputs.target }}
+        override: true
+
+    - name: build parser
+      env:
+        TARGET: ${{ inputs.target }}
+        CARGOFLAGS: ${{ inputs.cargoflags }}
+        BUILD_ENV: ${{ inputs.build_env }}
+      run: make rust-parser
+      shell: bash

@@ -26,49 +26,30 @@ jobs:
           - { os: windows-latest,                         target: x86_64-pc-windows-msvc   }
           - { os: windows-latest,                         target: x86_64-pc-windows-gnu    }
     steps:
-      - name: setup msvc on windows
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: install rust
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          target: ${{ matrix.build.target }}
-          override: true
-
       - name: checkout
         uses: actions/checkout@v2
 
-      - name: build parser
-        env:
-          TARGET: ${{ matrix.build.target }}
-          CARGOFLAGS: --features=${{ matrix.build.features }}
-        run: make rust-parser
+      - name: build rust-parser
+        uses: ./.github/actions/make-rust-parser
+        with:
+          target: ${{ matrix.build.target }}
+          features: ${{ matrix.build.features }}
+          build_env: debug
 
       - name: make dummy data
         run: make dummy-repos dummy-filelist
 
       - name: test runner
+        run: ./rust-parser
         env:
           FILELIST_PATH: dummy-filelist
-        run: ./rust-parser
 
   test-data:
     name: repos.zip
     runs-on: ubuntu-latest
     steps:
-      - name: install ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.0.0
-
       - name: checkout
         uses: actions/checkout@v2
 
-      - name: build repos.zip
-        run: make repos.zip
-
-      - name: show structure of repos.zip
-        run: unzip -l repos.zip
+      - name: make repos.zip
+        uses: ./.github/actions/make-repos-zip

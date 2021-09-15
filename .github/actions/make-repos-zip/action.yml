@@ -1,0 +1,22 @@
+name: "make repos.zip"
+description: "make repos.zip"
+inputs:
+  ruby-version:
+    description: "ruby version"
+    required: true
+    default: "3.0.0"
+runs:
+  using: "composite"
+  steps:
+    - name: install ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ inputs.ruby-version }}
+
+    - name: build repos.zip
+      run: make repos.zip
+      shell: bash
+
+    - name: show structure of repos.zip
+      run: unzip -l repos.zip
+      shell: bash
