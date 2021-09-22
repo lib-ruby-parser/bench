@@ -94,6 +94,9 @@ jobs:
       - 'build-rust-parser'
     runs-on: ubuntu-latest
     steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
       # Parsers
       - uses: actions/download-artifact@v2
         with: { name: rust-parser-x86_64-unknown-linux-gnu }
@@ -152,6 +155,6 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifactErrorsFailBuild: true
-          artifacts: "rust-parser-*,repos.zip"
+          artifacts: "rust-parser-*,repos.zip,ruby-parser.rb"
           bodyFile: release_notes.md
           token: ${{ secrets.GITHUB_TOKEN }}
