@@ -127,16 +127,23 @@ jobs:
       - name: merge benchmarks
         run: |
           ls -l
-          echo "\n### Results for x86_64-unknown-linux-gnu:\n" >> release_notes.md
+          echo "### Results for x86_64-unknown-linux-gnu:" >> release_notes.md
+          echo "" >> release_notes.md
           cat x86_64-unknown-linux-gnu.benchmark >> release_notes.md
+          echo "" >> release_notes.md
 
-          echo "\n### Results for x86_64-apple-darwin:\n" >> release_notes.md
+          echo "### Results for x86_64-apple-darwin:" >> release_notes.md
+          echo "" >> release_notes.md
           cat x86_64-apple-darwin.benchmark >> release_notes.md
+          echo "" >> release_notes.md
 
-          echo "\n### Results for x86_64-pc-windows-msvc:\n" >> release_notes.md
+          echo "### Results for x86_64-pc-windows-msvc:" >> release_notes.md
+          echo "" >> release_notes.md
           cat x86_64-pc-windows-msvc.benchmark >> release_notes.md
+          echo "" >> release_notes.md
 
-          echo "\n### Results for x86_64-pc-windows-gnu:\n" >> release_notes.md
+          echo "### Results for x86_64-pc-windows-gnu:" >> release_notes.md
+          echo "" >> release_notes.md
           cat x86_64-pc-windows-gnu.benchmark >> release_notes.md
 
           cat release_notes.md
@@ -145,6 +152,6 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifactErrorsFailBuild: true
-          artifacts: "rust-parser-*,repos.zip,benchmark"
+          artifacts: "rust-parser-*,repos.zip"
           bodyFile: release_notes.md
           token: ${{ secrets.GITHUB_TOKEN }}
