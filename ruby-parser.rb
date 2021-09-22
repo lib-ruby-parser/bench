@@ -13,4 +13,4 @@ files.each do |file|
     Ripper.sexp(file)
 end
 
-puts "Time taken: #{now - start}"
+puts "#{now - start}"

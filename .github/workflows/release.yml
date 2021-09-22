@@ -70,11 +70,8 @@ jobs:
 
       - name: test rust-parser
         run: |
-          echo "Rust:" >> ${{ matrix.build.target }}.benchmark
-          ./rust-parser >> ${{ matrix.build.target }}.benchmark
-
-          echo "Ruby:" >> ${{ matrix.build.target }}.benchmark
-          ruby ruby-parser.rb >> ${{ matrix.build.target }}.benchmark
+          echo "Rust: $(./rust-parser)" >> ${{ matrix.build.target }}.benchmark
+          echo "Ruby: $(ruby ruby-parser.rb)" >> ${{ matrix.build.target }}.benchmark
 
           cat ${{ matrix.build.target }}.benchmark
 
@@ -130,24 +127,24 @@ jobs:
       - name: merge benchmarks
         run: |
           ls -l
-          echo "Results for x86_64-unknown-linux-gnu:" >> benchmark
-          cat x86_64-unknown-linux-gnu.benchmark >> benchmark
+          echo "\n### Results for x86_64-unknown-linux-gnu:\n" >> release_notes.md
+          cat x86_64-unknown-linux-gnu.benchmark >> release_notes.md
 
-          echo "Results for x86_64-apple-darwin.benchmark:" >> benchmark
-          cat x86_64-apple-darwin.benchmark >> benchmark
+          echo "\n### Results for x86_64-apple-darwin:\n" >> release_notes.md
+          cat x86_64-apple-darwin.benchmark >> release_notes.md
 
-          echo "Results for x86_64-pc-windows-msvc:" >> benchmark
-          cat x86_64-pc-windows-msvc.benchmark >> benchmark
+          echo "\n### Results for x86_64-pc-windows-msvc:\n" >> release_notes.md
+          cat x86_64-pc-windows-msvc.benchmark >> release_notes.md
 
-          echo "Results for x86_64-pc-windows-gnu:" >> benchmark
-          cat x86_64-pc-windows-gnu.benchmark >> benchmark
+          echo "\n### Results for x86_64-pc-windows-gnu:\n" >> release_notes.md
+          cat x86_64-pc-windows-gnu.benchmark >> release_notes.md
 
-          cat benchmark
+          cat release_notes.md
 
       - name: release
         uses: ncipollo/release-action@v1
         with:
           artifactErrorsFailBuild: true
           artifacts: "rust-parser-*,repos.zip,benchmark"
-          bodyFile: benchmark
+          bodyFile: release_notes.md
           token: ${{ secrets.GITHUB_TOKEN }}

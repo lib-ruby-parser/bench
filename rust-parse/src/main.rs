@@ -5,7 +5,7 @@ extern crate lib_ruby_parser;
 #[global_allocator]
 static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
-use lib_ruby_parser::{debug_level, Parser, ParserOptions};
+use lib_ruby_parser::{Parser, ParserOptions};
 use std::time::Instant;
 
 fn files_to_parse() -> Vec<FileToParse> {
@@ -35,7 +35,6 @@ impl FileToParse {
         let Self { filepath, content } = self;
         let options = ParserOptions {
             buffer_name: filepath,
-            debug: debug_level::NONE,
             decoder: None,
             token_rewriter: None,
             record_tokens: false,
@@ -53,5 +52,5 @@ fn main() {
     }
     let end = Instant::now();
     let diff = (end - start).as_secs_f64();
-    println!("Time taken: {:.10}", diff)
+    println!("{:.10}", diff)
 }
