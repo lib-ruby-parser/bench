@@ -33,7 +33,7 @@ jobs:
         uses: ./.github/actions/make-rust-parser
         with:
           target: ${{ matrix.build.target }}
-          features: ${{ matrix.build.features }}
+          cargoflags: --features=${{ matrix.build.features }}
           build_env: debug
 
       - name: make dummy data
