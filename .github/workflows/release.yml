@@ -154,6 +154,7 @@ jobs:
       - name: release
         uses: ncipollo/release-action@v1
         with:
+          allowUpdates: true
           artifactErrorsFailBuild: true
           artifacts: "rust-parser-*,repos.zip,ruby-parser.rb"
           bodyFile: release_notes.md
