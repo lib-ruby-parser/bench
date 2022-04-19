@@ -7,7 +7,7 @@ version = "0.1.0"
 
 [dependencies]
 jemallocator = {version = "0.3.2", optional = true}
-lib-ruby-parser = "4.0.0+ruby-3.1.0"
+lib-ruby-parser = "4.0.1+ruby-3.1.1"
 
 [profile.release]
 lto = true

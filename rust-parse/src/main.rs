@@ -9,7 +9,13 @@ use lib_ruby_parser::{Parser, ParserOptions};
 use std::time::Instant;
 
 fn files_to_parse() -> Vec<FileToParse> {
-    let filelist_path = std::env::var("FILELIST_PATH").unwrap();
+    let filelist_path = std::env::var("FILELIST_PATH").unwrap_or_else(|_| {
+        println!(
+            "Usage:
+FILELIST_PATH=<path/to/filelist> ./rust-parser"
+        );
+        std::process::exit(1);
+    });
     let filelist = std::fs::read_to_string(&filelist_path).unwrap();
 
     filelist

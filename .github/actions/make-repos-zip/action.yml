@@ -4,7 +4,7 @@ inputs:
   ruby-version:
     description: "ruby version"
     required: true
-    default: "3.0.0"
+    default: "3.1.1"
 runs:
   using: "composite"
   steps:
